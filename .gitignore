@@ -70,3 +70,4 @@ Temporary Items
 [._]sw[a-p]
 go.work
 tags
+*.egg-info
