@@ -71,3 +71,7 @@ Temporary Items
 go.work
 tags
 *.egg-info
+__pycache__
+.vscode
+.tox
+.coverage
