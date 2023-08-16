@@ -85,14 +85,14 @@ def _extract_input_data(arguments: list[str], stdin: TextIO) -> tuple[list[str],
     ]
 
     if len(input_data):
-        return input_data
+        return (input_data, None)
 
     stdin_data = _attempt_reading_from_stdio(stdin)
 
     if stdin_data and len(stdin_data):
-        return [stdin_data]
+        return ([], None)
 
-    return None
+    raise ValueError("No input provided")
 
 
 def _is_deployment(spec: dict[str, Any]) -> bool:
@@ -105,29 +105,35 @@ def _behavior_not_defined() -> int:
     raise NotImplementedError()
 
 
-def _default_apply(args: list[str], stdin: bytes) -> int:
-    
+def _default_apply(args: list[str], stdin: str) -> int:
     return os.system("kubectl apply " + " ".join(args))
 
 
-def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Callable[[list[str], bytes], int] = _default_apply, on_mlps: Callable[..., int] = _behavior_not_defined, on_k8s_w_intent: Callable[..., int] = _behavior_not_defined) -> int:
+def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Callable[[list[str], str], int] = _default_apply, on_mlps: Callable[..., int] = _behavior_not_defined, on_k8s_w_intent: Callable[..., int] = _behavior_not_defined) -> int:
     logging.info("Starting FLUIDOS kubectl extension")
 
-    data = _extract_input_data(argv, stdin) # this needs to be fixed, we cannot assume kubectl apply is receiving data from stdin if it has been consumed here
+    file_data, stdin_data = _extract_input_data(argv, stdin) # this needs to be fixed, we cannot assume kubectl apply is receiving data from stdin if it has been consumed here
 
-    if data and 0 < len(data) < 2:
+    data: Optional[str] = None
+
+    if stdin_data:
+        data = stdin_data
+    if file_data and 0 < len(file_data) < 2:
+        data = file_data[0]
+
+    if data:
         # we assume to handle only one file/spec, for the moment at least
         try:
-            input_format, spec = _check_input_format(data[0])
+            input_format, spec = _check_input_format(data)
 
             if input_format == InputFormat.MSPL:
                 # INVOKE MSPL orchestrator
                 logging.info("Invoking MSPL Service Handler")
-                return on_mlps(sys.argv[-1:])
+                return on_mlps(argv[-1:])
             elif input_format == InputFormat.K8S:
                 if _is_deployment(spec) and _has_intent_defined(spec):
                     logging.info("Invoking K8S with Intent Service Handler")
-                    return on_k8s_w_intent(sys.argv[-1:])
+                    return on_k8s_w_intent(argv[-1:])
 
         except ValueError:
             logging.info("Unknown format, fallback to apply")
@@ -136,7 +142,7 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
 
     # if nothing else applies, fallback to vanilla kubectl apply behavior
     logging.info("Invoking kubectl apply")
-    return on_apply(sys.argv[-1:], data)
+    return on_apply(argv[-1:], stdin_data)
 
 
 def main():
