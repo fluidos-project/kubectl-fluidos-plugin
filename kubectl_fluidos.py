@@ -112,7 +112,11 @@ def _default_apply(args: list[str], stdin: str) -> int:
 def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Callable[[list[str], str], int] = _default_apply, on_mlps: Callable[..., int] = _behavior_not_defined, on_k8s_w_intent: Callable[..., int] = _behavior_not_defined) -> int:
     logging.info("Starting FLUIDOS kubectl extension")
 
-    file_data, stdin_data = _extract_input_data(argv, stdin) # this needs to be fixed, we cannot assume kubectl apply is receiving data from stdin if it has been consumed here
+    try:
+        file_data, stdin_data = _extract_input_data(argv, stdin) # this needs to be fixed, we cannot assume kubectl apply is receiving data from stdin if it has been consumed here
+    except ValueError:
+        print("error: must specify one of -f and -k", file=sys.stderr)
+        return 1
 
     data: Optional[str] = None
 
