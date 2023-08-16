@@ -73,7 +73,10 @@ def _read_file_argument_content(filename: str) -> str:
 
 
 def _attempt_reading_from_stdio(stdin: TextIO) -> str:
-    return stdin.read()
+    if stdin.isatty():
+        return ''
+    else:
+        return stdin.read()
 
 
 def _extract_input_data(arguments: list[str], stdin: TextIO) -> tuple[list[str], Optional[str]]:
@@ -86,7 +89,7 @@ def _extract_input_data(arguments: list[str], stdin: TextIO) -> tuple[list[str],
 
     stdin_data = _attempt_reading_from_stdio(stdin)
 
-    if len(stdin_data):
+    if stdin_data and len(stdin_data):
         return [stdin_data]
 
     return None
@@ -103,15 +106,16 @@ def _behavior_not_defined() -> int:
 
 
 def _default_apply(args: list[str], stdin: bytes) -> int:
+    
     return os.system("kubectl apply " + " ".join(args))
 
 
-def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Callable[..., int] = _default_apply, on_mlps: Callable[..., int] = _behavior_not_defined, on_k8s_w_intent: Callable[..., int] = _behavior_not_defined) -> int:
+def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Callable[[list[str], bytes], int] = _default_apply, on_mlps: Callable[..., int] = _behavior_not_defined, on_k8s_w_intent: Callable[..., int] = _behavior_not_defined) -> int:
     logging.info("Starting FLUIDOS kubectl extension")
 
     data = _extract_input_data(argv, stdin) # this needs to be fixed, we cannot assume kubectl apply is receiving data from stdin if it has been consumed here
 
-    if 0 < len(data) < 2:
+    if data and 0 < len(data) < 2:
         # we assume to handle only one file/spec, for the moment at least
         try:
             input_format, spec = _check_input_format(data[0])
@@ -132,7 +136,7 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
 
     # if nothing else applies, fallback to vanilla kubectl apply behavior
     logging.info("Invoking kubectl apply")
-    return on_apply(sys.argv[-1:], spec)
+    return on_apply(sys.argv[-1:], data)
 
 
 def main():
