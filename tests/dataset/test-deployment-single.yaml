@@ -1,0 +1,30 @@
+# Source: dlf-chart/charts/dataset-operator-chart/templates/apps/operator.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dataset-operator
+  labels:
+    app.kubernetes.io/name: "dlf"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: dataset-operator
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        name: dataset-operator
+        app.kubernetes.io/name: "dlf"
+    spec:
+      containers:
+        - name: dataset-operator
+          # Replace this with the built image name
+          image: "quay.io/datashim-io/dataset-operator:local"
+          command:
+            - /manager
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 9443
+              name: webhook-api

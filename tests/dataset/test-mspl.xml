@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes'?> 
+<ITResourceOrchestration id="mspl_9f1a88b4fc67421b98de270d5a63d35f"> 
+  <!-- Deploy HTTP SERVER with less than 15ms of latency -->
+  <ITResource id="mspl_eef61525d1594412bdcef34a4bfb7fc8" orchestrationID="mspl_9f1a88b4fc67421b98de270d5a63d34f" tenantID="1"> 
+    <capability> 
+      <Name>Secured_Service_MANO</Name> 
+    </capability> 
+    <securedService> 
+      <service id="132"> 
+        <name>front_end</name> 
+        <type>HTTP_SERVER</type> 
+      </service> 
+    </securedService> 
+    <orchestrationRequirements> 
+      <hardConstraint> 
+        <constraintType>LATENCY</constraintType> 
+        <operator>LESS</operator> 
+        <value>15</value> 
+        <valueUnit>MILLISECONDS</valueUnit> 
+      </hardConstraint> 
+    </orchestrationRequirements> 
+  </ITResource>
+  <!-- Deploy Database in Italy -->
+  <ITResource id="mspl_eef61525d1594412bdcef34a4bfb7fc9" orchestrationID="mspl_9f1a88b4fc67421b98de270d5a63d34f" tenantID="1"> 
+  <capability> 
+    <Name>Secured_Service_MANO</Name> 
+  </capability> 
+    <securedService> 
+    <service id="132"> 
+      <name>data</name> 
+      <type>DATABASE</type> 
+    </service> 
+    </securedService> 
+  <orchestrationRequirements> 
+    <hardConstraint> 
+      <constraintType>LOCATION</constraintType> 
+      <operator>EQUAL</operator> 
+      <value>ITALY</value> 
+    </hardConstraint> 
+  </orchestrationRequirements> 
+  </ITResource> 
+</ITResourceOrchestration>
