@@ -2,3 +2,4 @@ covdefaults
 coverage
 pytest
 faker
+pytest-mock-server
