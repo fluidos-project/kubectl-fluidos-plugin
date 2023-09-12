@@ -1,8 +1,6 @@
 import codecs
 import pkg_resources
-import pytest
 from io import StringIO
-from pytest import fail
 
 from kubectl_fluidos import fluidos_kubectl_extension, _is_XML, _is_YAML
 
