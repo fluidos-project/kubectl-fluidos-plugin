@@ -1,5 +1,6 @@
 from pytest_httpserver import HTTPServer
 import requests
+from urllib import parse
 
 from kubectl_fluidos import MLPSProcessor
 from kubectl_fluidos import MLPSProcessorConfiguration
@@ -22,8 +23,14 @@ def test_build_configuration_empty_parameters():
 def test_basic_behavior(httpserver: HTTPServer):
     httpserver.expect_request("/meservice").respond_with_json({"result": "ok"})
 
+    url_parts: parse.ParseResult = parse.urlparse(httpserver.url_for("/meservice"))
+
     processor = MLPSProcessor(
-        httpserver.url_for()
+        MLPSProcessorConfiguration(
+            url_parts.hostname,
+            url_parts.port or 8002,
+            url_parts.scheme
+        )
     )
 
-    assert processor() == 0
+    assert processor("FOOO") == 0

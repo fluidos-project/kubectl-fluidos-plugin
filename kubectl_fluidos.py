@@ -27,13 +27,13 @@ class InputFormat(Enum):
 
 @dataclass
 class MLPSProcessorConfiguration:
-    hostname: str
+    hostname: str = "localhost"
     port: int = 8002
     schema: str = "http"
 
 
 class MLPSProcessor:
-    def __init__(self, configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration):
+    def __init__(self, configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration()):
         self.configuration = configuration
 
     def __call__(self, data) -> int:
