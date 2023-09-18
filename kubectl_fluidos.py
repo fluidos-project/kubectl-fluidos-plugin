@@ -41,6 +41,12 @@ class MLPSProcessor:
         if response.status_code == 200:
             return 0
 
+        if int(response.status_code / 100) == 4:
+            logging.error(f"Unable to retrieve correct resource {response.status_code=}")
+
+        if int(response.status_code / 100) == 5:
+            logging.error(f"Error in the service {response.status_code=}")
+
         return 1
 
     def _build_headers(self) -> dict[str, Any]:
