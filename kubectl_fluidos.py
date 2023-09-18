@@ -1,9 +1,15 @@
 #! /usr/bin/env python
+
+from dataclasses import dataclass
 import logging
 import os
 import sys
 from typing import Any, Callable, Optional, TextIO
 import yaml
+from kubernetes import config
+from kubernetes.client import Configuration
+from kubernetes.config import ConfigException
+from requests import post
 
 try:
     from yaml import CLoader as Loader
@@ -19,8 +25,71 @@ class InputFormat(Enum):
     MSPL = auto()
 
 
-INTENT_K8S_KEYWORD = "quality_intent"
+@dataclass
+class MLPSProcessorConfiguration:
+    hostname: str
+    port: int = 8002
+    schema: str = "http"
 
+
+class MLPSProcessor:
+    def __init__(self, configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration):
+        self.configuration = configuration
+
+    def __call__(self, data) -> int:
+        response = post(f"{self.configuration.schema}://{self.configuration.hostname}:{self.configuration.port}/meservice", headers=self._build_headers(), data=data)
+        if response.status_code == 200:
+            return 0
+
+        return 1
+
+    def _build_headers(self) -> dict[str, Any]:
+        return {
+            "Content-Type": "application/xml"
+        }
+
+    @staticmethod
+    def build_configuration(args: list[str]) -> MLPSProcessorConfiguration:
+        """
+            if "config_file" in kwargs.keys():
+        load_kube_config(**kwargs)
+    elif "kube_config_path" in kwargs.keys():
+        kwargs["config_file"] = kwargs.pop("kube_config_path", None)
+        load_kube_config(**kwargs)
+    elif exists(expanduser(KUBE_CONFIG_DEFAULT_LOCATION)):
+        load_kube_config(**kwargs)
+        """
+        try:
+            config.load_config()
+
+            try:
+                c = Configuration().get_default_copy()
+            except AttributeError:
+                c = Configuration()
+                c.assert_hostname = False
+            Configuration.set_default(c)
+        except ConfigException:
+            print("Nothing to do here")
+
+        return MLPSProcessorConfiguration(
+            hostname=MLPSProcessor._extract_hostname(c.host),
+            port=8002,
+            schema="http"
+        )
+
+    @staticmethod
+    def _extract_hostname(url: str) -> str:
+        from urllib.parse import urlparse
+
+        parsed_url = urlparse(url)
+
+        if parsed_url.hostname is not None:
+            return parsed_url.hostname
+
+        raise ValueError("Unable to extract hostname properly")
+
+
+INTENT_K8S_KEYWORD = "quality_intent"
 
 
 def _is_YAML(data: str) -> bool:
@@ -113,7 +182,7 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
     logging.info("Starting FLUIDOS kubectl extension")
 
     try:
-        file_data, stdin_data = _extract_input_data(argv, stdin) # this needs to be fixed, we cannot assume kubectl apply is receiving data from stdin if it has been consumed here
+        file_data, stdin_data = _extract_input_data(argv, stdin)  # this needs to be fixed, we cannot assume kubectl apply is receiving data from stdin if it has been consumed here
     except ValueError:
         print("error: must specify one of -f and -k", file=sys.stderr)
         return 1
@@ -133,7 +202,7 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
             if input_format == InputFormat.MSPL:
                 # INVOKE MSPL orchestrator
                 logging.info("Invoking MSPL Service Handler")
-                return on_mlps(argv[-1:])
+                return on_mlps(data)
             elif input_format == InputFormat.K8S:
                 if _is_deployment(spec) and _has_intent_defined(spec):
                     logging.info("Invoking K8S with Intent Service Handler")
@@ -151,8 +220,12 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
 
 def main():
     raise SystemExit(
-        fluidos_kubectl_extension(sys.argv, sys.stdin)
+        fluidos_kubectl_extension(
+            sys.argv,
+            sys.stdin,
+            on_mlps=lambda x: MLPSProcessor(MLPSProcessor.build_configuration(sys.argv))(x))
     )
+
 
 if __name__ == "__main__":
     main()
