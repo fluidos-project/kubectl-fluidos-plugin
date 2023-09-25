@@ -1,4 +1,5 @@
 #! /usr/bin/env python
+from __future__ import annotations
 
 from dataclasses import dataclass
 import logging
@@ -31,29 +32,6 @@ class MLPSProcessorConfiguration:
     port: int = 8002
     schema: str = "http"
 
-
-class MLPSProcessor:
-    def __init__(self, configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration()):
-        self.configuration = configuration
-
-    def __call__(self, data) -> int:
-        response = post(f"{self.configuration.schema}://{self.configuration.hostname}:{self.configuration.port}/meservice", headers=self._build_headers(), data=data)
-        if response.status_code == 200:
-            return 0
-
-        if int(response.status_code / 100) == 4:
-            logging.error(f"Unable to retrieve correct resource {response.status_code=}")
-
-        if int(response.status_code / 100) == 5:
-            logging.error(f"Error in the service {response.status_code=}")
-
-        return 1
-
-    def _build_headers(self) -> dict[str, Any]:
-        return {
-            "Content-Type": "application/xml"
-        }
-
     @staticmethod
     def build_configuration(args: list[str]) -> MLPSProcessorConfiguration:
         """
@@ -78,7 +56,7 @@ class MLPSProcessor:
             print("Nothing to do here")
 
         return MLPSProcessorConfiguration(
-            hostname=MLPSProcessor._extract_hostname(c.host),
+            hostname=MLPSProcessorConfiguration._extract_hostname(c.host),
             port=8002,
             schema="http"
         )
@@ -95,7 +73,30 @@ class MLPSProcessor:
         raise ValueError("Unable to extract hostname properly")
 
 
-INTENT_K8S_KEYWORD = "quality_intent"
+class MLPSProcessor:
+    def __init__(self, configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration()):
+        self.configuration = configuration
+
+    def __call__(self, data) -> int:
+        response = post(f"{self.configuration.schema}://{self.configuration.hostname}:{self.configuration.port}/meservice", headers=self._build_headers(), data=data)
+        if response.status_code == 200:
+            return 0
+
+        if int(response.status_code / 100) == 4:
+            logging.error(f"Unable to retrieve correct resource {response.status_code=}")
+
+        if int(response.status_code / 100) == 5:
+            logging.error(f"Error in the service {response.status_code=}")
+
+        return 1
+
+    def _build_headers(self) -> dict[str, Any]:
+        return {
+            "Content-Type": "application/xml"
+        }
+
+
+INTENT_K8S_KEYWORD = "quality_intent"  # label to be confirmed
 
 
 def _is_YAML(data: str) -> bool:
