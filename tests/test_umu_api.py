@@ -12,7 +12,7 @@ def test_handler_responses(httpserver: HTTPServer):
 
 
 def test_build_configuration_empty_parameters():
-    configuration: MLPSProcessorConfiguration = MLPSProcessor.build_configuration([])
+    configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration.build_configuration([])
 
     assert configuration is not None
     assert configuration.port == 8002
