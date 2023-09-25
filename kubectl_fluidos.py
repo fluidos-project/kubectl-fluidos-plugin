@@ -5,12 +5,18 @@ from dataclasses import dataclass
 import logging
 import os
 import sys
-from typing import Any, Callable, Optional, TextIO
+from argparse import ArgumentParser
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import TextIO
 import yaml
 from kubernetes import config
 from kubernetes.client import Configuration
 from kubernetes.config import ConfigException
 from requests import post
+
+from logging import Logger
 
 try:
     from yaml import CLoader as Loader
@@ -21,9 +27,29 @@ from xml.etree import ElementTree
 from enum import Enum, auto
 
 
+logger = Logger()
+
+
 class InputFormat(Enum):
     K8S = auto()
     MSPL = auto()
+
+
+def mlpsArgParser() -> ArgumentParser:
+    parser = ArgumentParser()
+
+    parser.add_argument("mlps-hostname", nargs=1, required=False, type=str)
+    parser.add_argument("mlps-port", nargs=1, required=False, type=str)
+
+    return parser
+
+
+def k8sArgParser() -> ArgumentParser:
+    parser = ArgumentParser()
+
+    parser.add_argument("")
+
+    return parser
 
 
 @dataclass
@@ -34,16 +60,25 @@ class MLPSProcessorConfiguration:
 
     @staticmethod
     def build_configuration(args: list[str]) -> MLPSProcessorConfiguration:
-        """
-            if "config_file" in kwargs.keys():
-        load_kube_config(**kwargs)
-    elif "kube_config_path" in kwargs.keys():
-        kwargs["config_file"] = kwargs.pop("kube_config_path", None)
-        load_kube_config(**kwargs)
-    elif exists(expanduser(KUBE_CONFIG_DEFAULT_LOCATION)):
-        load_kube_config(**kwargs)
-        """
+        namespace, remaining_args = mlpsArgParser().parse_known_args(args)
+
+        logger.debug(f"Remaining arguments: {''.join(remaining_args)}")
+
+        namespace[]
+
         try:
+            """
+                if "config_file" in kwargs.keys():
+            load_kube_config(**kwargs)
+        elif "kube_config_path" in kwargs.keys():
+            kwargs["config_file"] = kwargs.pop("kube_config_path", None)
+            load_kube_config(**kwargs)
+        elif exists(expanduser(KUBE_CONFIG_DEFAULT_LOCATION)):
+            load_kube_config(**kwargs)
+            """
+            
+            k8s_args, remaining_args = k8srgParser().parse_known_args(remaining_args)
+
             config.load_config()
 
             try:
@@ -52,14 +87,16 @@ class MLPSProcessorConfiguration:
                 c = Configuration()
                 c.assert_hostname = False
             Configuration.set_default(c)
+
+            return MLPSProcessorConfiguration(
+                hostname=MLPSProcessorConfiguration._extract_hostname(c.host),
+                port=8002,
+                schema="http"
+            )
         except ConfigException:
             print("Nothing to do here")
 
-        return MLPSProcessorConfiguration(
-            hostname=MLPSProcessorConfiguration._extract_hostname(c.host),
-            port=8002,
-            schema="http"
-        )
+        raise RuntimeError("Unable to build configuration")
 
     @staticmethod
     def _extract_hostname(url: str) -> str:
