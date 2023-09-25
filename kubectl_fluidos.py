@@ -27,7 +27,7 @@ from xml.etree import ElementTree
 from enum import Enum, auto
 
 
-logger = Logger()
+logger = Logger(__name__)
 
 
 class InputFormat(Enum):
@@ -38,8 +38,9 @@ class InputFormat(Enum):
 def mlpsArgParser() -> ArgumentParser:
     parser = ArgumentParser()
 
-    parser.add_argument("mlps-hostname", nargs=1, required=False, type=str)
-    parser.add_argument("mlps-port", nargs=1, required=False, type=str)
+    parser.add_argument("--mlps-hostname", required=False, type=str)
+    parser.add_argument("--mlps-port", required=False, type=int)
+    parser.add_argument("--mlps-url", required=False, type=str)
 
     return parser
 
@@ -47,7 +48,12 @@ def mlpsArgParser() -> ArgumentParser:
 def k8sArgParser() -> ArgumentParser:
     parser = ArgumentParser()
 
-    parser.add_argument("")
+    parser.add_argument("--kubeconfig", required=False, default="")
+    parser.add_argument("--context", required=False, default="")
+    parser.add_argument("--cluster", required=False, default="")
+    parser.add_argument("--namespace", required=False, default="")
+    parser.add_argument("--username", required=False, default="")
+    parser.add_argument("--password", required=False, default="")
 
     return parser
 
@@ -57,14 +63,25 @@ class MLPSProcessorConfiguration:
     hostname: str = "localhost"
     port: int = 8002
     schema: str = "http"
+    url: Optional[str] = None
+
+    def get_url(self) -> str:
+        if self.url:
+            return self.url
+        else:
+            return f"{self.schema}://{self.hostname}:{self.port}/meservice"
 
     @staticmethod
     def build_configuration(args: list[str]) -> MLPSProcessorConfiguration:
         namespace, remaining_args = mlpsArgParser().parse_known_args(args)
 
-        logger.debug(f"Remaining arguments: {''.join(remaining_args)}")
-
-        namespace[]
+        if namespace.mlps_url is not None:
+            return MLPSProcessorConfiguration(url=namespace.mlps_url)
+        elif namespace.mlps_hostname and namespace.mlps_port:
+            return MLPSProcessorConfiguration(
+                hostname=namespace.mlps_hostname,
+                port=namespace.mlps_port
+            )
 
         try:
             """
@@ -76,10 +93,16 @@ class MLPSProcessorConfiguration:
         elif exists(expanduser(KUBE_CONFIG_DEFAULT_LOCATION)):
             load_kube_config(**kwargs)
             """
-            
-            k8s_args, remaining_args = k8srgParser().parse_known_args(remaining_args)
 
-            config.load_config()
+            k8s_args, remaining_args = k8sArgParser().parse_known_args(remaining_args)
+            # missing expanding load configuration from provided command line options
+
+            loading_args = {}
+
+            if k8s_args.kubeconfig:
+                loading_args["config_file"] = k8s_args.kubeconfig
+
+            config.load_config(**loading_args)
 
             try:
                 c = Configuration().get_default_copy()
@@ -115,7 +138,7 @@ class MLPSProcessor:
         self.configuration = configuration
 
     def __call__(self, data) -> int:
-        response = post(f"{self.configuration.schema}://{self.configuration.hostname}:{self.configuration.port}/meservice", headers=self._build_headers(), data=data)
+        response = post(self.configuration.get_url(), headers=self._build_headers(), data=data)
         if response.status_code == 200:
             return 0
 
