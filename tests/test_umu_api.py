@@ -1,5 +1,7 @@
 from pytest_httpserver import HTTPServer
 import requests
+from werkzeug import Response
+from http import HTTPStatus
 
 from kubectl_fluidos import MLPSProcessor
 from kubectl_fluidos import MLPSProcessorConfiguration
@@ -20,7 +22,7 @@ def test_build_configuration_empty_parameters():
 
 
 def test_basic_behavior(httpserver: HTTPServer):
-    httpserver.expect_request("/meservice").respond_with_json({"result": "ok"})
+    httpserver.expect_request("/meservice", method="POST").respond_with_json({"result": "ok"})
 
     processor = MLPSProcessor(
         MLPSProcessorConfiguration(url=httpserver.url_for("/meservice"))
@@ -37,3 +39,25 @@ def test_configuration_overload_from_cl_arguments():
     configuration = MLPSProcessorConfiguration.build_configuration(["--mlps-hostname", "www.google.com", "--mlps-port", "12355"])
 
     assert configuration.get_url() == "http://www.google.com:12355/meservice"
+
+
+def test_service_not_available():
+    processor = MLPSProcessor(
+        MLPSProcessorConfiguration(url="http://localhost:123123/meservice")
+    )
+
+    assert processor("FOOO") != 0
+
+
+def test_timeout_management(httpserver: HTTPServer):
+    response: Response = Response(
+        response=None,
+        status=HTTPStatus.BAD_REQUEST
+    )
+    httpserver.expect_request("/meservice", method="POST").respond_with_response(response=response)
+
+    processor = MLPSProcessor(
+        MLPSProcessorConfiguration(url="http://localhost:123123/meservice")
+    )
+
+    assert processor("FOOO") != 0
