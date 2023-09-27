@@ -15,6 +15,7 @@ from kubernetes import config
 from kubernetes.client import Configuration
 from kubernetes.config import ConfigException
 from requests import post
+from requests.exceptions import InvalidURL
 
 from logging import Logger
 
@@ -138,9 +139,14 @@ class MLPSProcessor:
         self.configuration = configuration
 
     def __call__(self, data) -> int:
-        response = post(self.configuration.get_url(), headers=self._build_headers(), data=data)
-        if response.status_code == 200:
-            return 0
+        try:
+            response = post(self.configuration.get_url(), headers=self._build_headers(), data=data)
+            if response.status_code == 200:
+                return 0
+        except InvalidURL as e:
+            logger.info(f"Error connecting to the orchestration service {e.response}")
+
+        return -1
 
         if int(response.status_code / 100) == 4:
             logging.error(f"Unable to retrieve correct resource {response.status_code=}")
