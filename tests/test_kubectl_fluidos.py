@@ -96,7 +96,7 @@ def test_input_from_parameter():
     return_value = fluidos_kubectl_extension(["kubectl-fluidos", "-f", doc_file], StringIO(), on_apply=validation)
 
     assert return_value == 123456
-    
+
 
 def test_validate_fallsback_to_appy():
     doc_file = pkg_resources.resource_filename(__name__, "dataset/test-deployment-single.yaml")
