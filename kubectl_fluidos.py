@@ -145,8 +145,7 @@ class MLPSProcessor:
                 return 0
         except InvalidURL as e:
             logger.info(f"Error connecting to the orchestration service {e.response}")
-
-        return -1
+            return 1
 
         if int(response.status_code / 100) == 4:
             logging.error(f"Unable to retrieve correct resource {response.status_code=}")
