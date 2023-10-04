@@ -161,6 +161,16 @@ class MLPSProcessor:
         }
 
 
+@dataclass
+class ModelBasedOrchestratorConfiguration:
+    pass
+
+
+class ModelBasedOrchestratorProcessor:
+    def __init__(self, configuration: ModelBasedOrchestratorConfiguration = ModelBasedOrchestratorConfiguration()):
+        self.configuration = configuration
+
+
 INTENT_K8S_KEYWORD = "quality_intent"  # label to be confirmed
 
 
