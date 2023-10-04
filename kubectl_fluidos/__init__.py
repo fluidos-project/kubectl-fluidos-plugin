@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
 import sys
 from typing import Any
@@ -15,8 +14,10 @@ import yaml
 
 from logging import Logger
 
-from kubectl_fluidos.mspl import MLPSProcessor
-from kubectl_fluidos.mspl import MLPSProcessorConfiguration
+from .modelbased import ModelBasedOrchestratorConfiguration
+from .modelbased import ModelBasedOrchestratorProcessor
+from .mspl import MLPSProcessor
+from .mspl import MLPSProcessorConfiguration
 
 try:
     from yaml import CLoader as Loader
@@ -24,7 +25,8 @@ except ImportError:
     from yaml import Loader
 
 from xml.etree import ElementTree
-from enum import Enum, auto
+from enum import Enum
+from enum import auto
 
 
 logger = Logger(__name__)
@@ -33,23 +35,6 @@ logger = Logger(__name__)
 class InputFormat(Enum):
     K8S = auto()
     MSPL = auto()
-
-
-@dataclass
-class ModelBasedOrchestratorConfiguration:
-    pass
-
-    @staticmethod
-    def build_configuraiton(args: list[str]) -> ModelBasedOrchestratorConfiguration:
-        pass
-
-
-class ModelBasedOrchestratorProcessor:
-    def __init__(self, configuration: ModelBasedOrchestratorConfiguration = ModelBasedOrchestratorConfiguration()):
-        self.configuration = configuration
-
-    def __call__(self, data) -> int:
-        raise NotImplementedError()
 
 
 INTENT_K8S_KEYWORD = "quality_intent"  # label to be confirmed
@@ -187,7 +172,7 @@ def main():
             sys.argv,
             sys.stdin,
             on_mlps=lambda x: MLPSProcessor(MLPSProcessorConfiguration.build_configuration(sys.argv))(x),
-            on_k8s_w_intent=lambda x: ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuraiton(sys.argv)(x)))
+            on_k8s_w_intent=lambda x: ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuration(sys.argv)(x)))
     )
 
 
