@@ -1,7 +1,7 @@
 # coding: utf-8
 '''
 ------------------------------------------------------------------------------
-Copyright 2023 IBM Research
+Copyright 2023 IBM Research Europe
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ------------------------------------------------------------------------------
 '''
-
 from __future__ import annotations
 
 import os
@@ -25,11 +24,8 @@ from typing import Callable
 from typing import Optional
 from typing import TextIO
 import yaml
-# from kubernetes import config
-# from kubernetes.client import Configuration
-# from kubernetes.config import ConfigException
 
-from logging import Logger
+import logging
 
 from .modelbased import ModelBasedOrchestratorConfiguration
 from .modelbased import ModelBasedOrchestratorProcessor
@@ -46,7 +42,7 @@ from enum import Enum
 from enum import auto
 
 
-logger = Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class InputFormat(Enum):
@@ -130,7 +126,7 @@ def _extract_input_data(arguments: list[str], stdin: TextIO) -> tuple[list[str],
 
 
 def _is_deployment(spec: dict[str, Any]) -> bool:
-    if type(spec) == dict:
+    if type(spec) is dict:
         return spec.get("kind", None) == "Deployment"
     return False
 

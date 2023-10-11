@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from argparse import ArgumentParser
 from dataclasses import dataclass
-from logging import Logger
+import logging
 from typing import Any, Optional
 from kubernetes import config
 from kubernetes.client import Configuration
@@ -31,7 +31,7 @@ from requests.exceptions import InvalidURL
 from kubectl_fluidos.common import k8sArgParser
 
 
-logger = Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def mlpsArgParser() -> ArgumentParser:
