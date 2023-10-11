@@ -1,7 +1,7 @@
 # coding: utf-8
 '''
 ------------------------------------------------------------------------------
-Copyright 2023 IBM Research
+Copyright 2023 IBM Research Europe
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -15,18 +15,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ------------------------------------------------------------------------------
 '''
-
 from __future__ import annotations
+from argparse import ArgumentParser
 
 from dataclasses import dataclass
-from logging import Logger
+import logging
+from typing import Any
 from kubernetes import config
+from kubernetes import client
+from kubernetes import utils
 from kubernetes.client import Configuration
 from kubernetes.config import ConfigException
+import yaml
 
 from kubectl_fluidos.common import k8sArgParser
 
-logger = Logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -62,7 +66,43 @@ class ModelBasedOrchestratorConfiguration:
 
 class ModelBasedOrchestratorProcessor:
     def __init__(self, configuration: ModelBasedOrchestratorConfiguration = ModelBasedOrchestratorConfiguration()):
-        self.configuration = configuration
+        self._configuration = configuration
+        self._k8s_client = client.ApiClient(self._configuration)
 
-    def __call__(self, data) -> int:
-        raise NotImplementedError()
+    def __call__(self, data: list[str]) -> int:
+        logger.info("Wrapping request")
+        request = _request_to_dictionary(data)
+        logger.info("Sending request to k8s")
+        utils.create_from_dict(self._k8s_client, data=request)
+
+
+def _request_to_dictionary(data: list[str]) -> dict[str, Any]:
+    request_as_yaml: dict[str, Any] = _extract_request(data)
+
+    request_to_dictionary = {
+        "apiVersion": "fluidos.eu/v1",
+        "kind": "ModelBasedDeployment",
+        "metadata": {
+            "name": request_as_yaml["metadata"]["name"]
+        },
+        "spec": request_as_yaml
+    }
+
+    return request_to_dictionary
+
+
+def _extract_request(data: list[str]) -> dict[str, Any]:
+    parser = _modelBasedArgParser()
+
+    namespace, remaining_args = parser.parse_known_args(data)
+
+    with open(namespace.f, "r") as input_data:
+        return yaml.safe_load(input_data)
+
+
+def _modelBasedArgParser() -> ArgumentParser:
+    parser = ArgumentParser()
+
+    parser.add_argument("-f", required=True, type=str)
+
+    return parser
