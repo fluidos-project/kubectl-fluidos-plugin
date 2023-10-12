@@ -1,7 +1,7 @@
 # coding: utf-8
 '''
 ------------------------------------------------------------------------------
-Copyright 2023 IBM Research
+Copyright 2023 IBM Research Europe
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -15,7 +15,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ------------------------------------------------------------------------------
 '''
-
 from __future__ import annotations
 
 from argparse import ArgumentParser
@@ -102,10 +101,11 @@ class MLPSProcessorConfiguration:
                 port=8002,
                 schema="http"
             )
-        except ConfigException:
-            print("Nothing to do here")
+        except ConfigException as e:
+            logger.debug(f"Unable to load k8s configuration: {e}")
 
-        raise RuntimeError("Unable to build configuration")
+        # if nothing worked, return defaults
+        return MLPSProcessorConfiguration()
 
     @staticmethod
     def _extract_hostname(url: str) -> str:
