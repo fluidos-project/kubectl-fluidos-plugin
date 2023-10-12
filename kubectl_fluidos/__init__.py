@@ -50,7 +50,7 @@ class InputFormat(Enum):
     MSPL = auto()
 
 
-INTENT_K8S_KEYWORD = "quality_intent"  # label to be confirmed
+INTENT_K8S_KEYWORD = "fluidos-intent"  # label to be confirmed
 
 
 def _is_YAML(data: str) -> bool:
@@ -83,18 +83,8 @@ def _check_input_format(input_data: str) -> (InputFormat, Optional[dict[str, Any
     raise ValueError("Unknown format")
 
 
-def _has_container_intent_defined(container_template: dict[str, Any]) -> bool:
-    return "resources" in container_template and INTENT_K8S_KEYWORD in container_template["resources"]
-
-
 def _has_intent_defined(data: dict[str, Any]) -> bool:
-    # big assumption, of where intents are specified within a deployment
-    for container_template in data["spec"]["template"]["spec"]["containers"]:
-        # assume it is specified as resource request
-        if _has_container_intent_defined(container_template):
-            return True
-
-    return False
+    return data.get("metadata", {}).get(INTENT_K8S_KEYWORD) is not None
 
 
 def _read_file_argument_content(filename: str) -> str:
@@ -165,9 +155,9 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
                 logger.info("Invoking MSPL Service Handler")
                 return on_mlps(data)
             elif input_format == InputFormat.K8S:
-                if _is_deployment(spec) and _has_intent_defined(spec):
+                if _has_intent_defined(spec):
                     logger.info("Invoking K8S with Intent Service Handler")
-                    return on_k8s_w_intent(argv[-1:])
+                    return on_k8s_w_intent(data)
 
         except ValueError:
             logger.info("Unknown format, fallback to apply")
@@ -185,7 +175,8 @@ def main():
             sys.argv,
             sys.stdin,
             on_mlps=lambda x: MLPSProcessor(MLPSProcessorConfiguration.build_configuration(sys.argv))(x),
-            on_k8s_w_intent=lambda x: ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuration(sys.argv)(x)))
+            on_k8s_w_intent=lambda x: ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuration(sys.argv))(x)
+        )
     )
 
 

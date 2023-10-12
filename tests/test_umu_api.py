@@ -16,12 +16,14 @@ limitations under the License.
 ------------------------------------------------------------------------------
 '''
 
+from io import StringIO
+import pkg_resources
 from pytest_httpserver import HTTPServer
 import requests
 from werkzeug import Response
 from http import HTTPStatus
 
-from kubectl_fluidos import MLPSProcessor
+from kubectl_fluidos import MLPSProcessor, fluidos_kubectl_extension
 from kubectl_fluidos import MLPSProcessorConfiguration
 
 
@@ -79,3 +81,24 @@ def test_timeout_management(httpserver: HTTPServer):
     )
 
     assert processor("FOOO") != 0
+
+
+def test_pipeline(httpserver: HTTPServer):
+    doc_file = pkg_resources.resource_filename(__name__, "dataset/test-mspl.xml")
+
+    def apply(a, b):
+        return 123456
+
+    def drl(a):
+        return 9876342
+
+    httpserver.expect_request("/meservice", method="POST").respond_with_json({
+        "message": "ok"
+    })
+
+    args = ["kubectl-fluidos", "-f", doc_file, "--mlps-url", httpserver.url_for("/meservice")]
+
+    return_value = fluidos_kubectl_extension(args, StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=lambda x: MLPSProcessor(MLPSProcessorConfiguration.build_configuration(args))(x))
+
+    assert return_value == 0
+    httpserver.add_assertion
