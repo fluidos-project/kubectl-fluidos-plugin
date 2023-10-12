@@ -20,6 +20,7 @@ from argparse import ArgumentParser
 
 from dataclasses import dataclass
 import logging
+import logging.config
 from typing import Any, Optional
 from kubernetes import config
 from kubernetes import client
@@ -27,7 +28,11 @@ from kubernetes.client import Configuration
 from kubernetes.config import ConfigException
 import yaml
 
+import pkg_resources
+
 from kubectl_fluidos.common import k8sArgParser
+
+logging.config.fileConfig(pkg_resources.resource_filename(__name__, "logging.conf"))
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +78,7 @@ class ModelBasedOrchestratorProcessor:
         logger.info("Wrapping request")
         request = _request_to_dictionary(data)
         logger.info("Sending request to k8s")
+        logger.debug(f"{yaml.safe_dump(request)}")
 
         response = client.CustomObjectsApi(self._k8s_client).create_namespaced_custom_object(
             group="fluidos.eu",
@@ -89,7 +95,10 @@ class ModelBasedOrchestratorProcessor:
 
 
 def _request_to_dictionary(data: str) -> dict[str, Any]:
+    logger.info("Converting to dictionary and augmenting")
     request_as_yaml: dict[str, Any] = _extract_request(data)
+
+    logger.debug(f"{request_as_yaml=}")
 
     request_to_dictionary = {
         "apiVersion": "fluidos.eu/v1",

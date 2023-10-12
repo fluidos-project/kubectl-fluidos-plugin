@@ -50,7 +50,7 @@ class InputFormat(Enum):
     MSPL = auto()
 
 
-INTENT_K8S_KEYWORD = "fluidos-intent"  # label to be confirmed
+INTENT_K8S_KEYWORD = "fluidos-intent-"  # label to be confirmed
 
 
 def _is_YAML(data: str) -> bool:
@@ -83,8 +83,15 @@ def _check_input_format(input_data: str) -> (InputFormat, Optional[dict[str, Any
     raise ValueError("Unknown format")
 
 
-def _has_intent_defined(data: dict[str, Any]) -> bool:
-    return data.get("metadata", {}).get(INTENT_K8S_KEYWORD) is not None
+def _has_intent_defined(spec: dict[str, Any]) -> bool:
+    annotations: dict[str, str] = spec.get("metadata", dict()).get("annotations", dict())
+    key: str
+
+    for key in annotations.keys():
+        if key.startswith(INTENT_K8S_KEYWORD):
+            return True
+
+    return False
 
 
 def _read_file_argument_content(filename: str) -> str:
