@@ -3,9 +3,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: dataset-operator
-  fluidos-intent:
-    - location: Turin
-    - latency: 100ms
+  annotations:
+    fluidos-intent-location: Turin
+    fluidos-intent-latency: 100ms
   labels:
     app.kubernetes.io/name: "dlf"
 spec:
@@ -31,4 +31,3 @@ spec:
           ports:
             - containerPort: 9443
               name: webhook-api
-          resources:

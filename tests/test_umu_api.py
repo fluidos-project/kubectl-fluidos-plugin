@@ -37,7 +37,7 @@ def test_build_configuration_empty_parameters_no_k8s():
 
     assert configuration is not None
     assert configuration.port == 8002
-    assert configuration.hostname == "localhost"
+    assert configuration.hostname == "127.0.0.1"
     assert configuration.schema == "http"
 
 
