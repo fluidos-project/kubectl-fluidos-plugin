@@ -16,6 +16,7 @@ limitations under the License.
 ------------------------------------------------------------------------------
 '''
 
+import pytest
 from pytest_httpserver import HTTPServer
 import requests
 from werkzeug import Response
@@ -30,12 +31,12 @@ def test_handler_responses(httpserver: HTTPServer):
     assert requests.get(httpserver.url_for("/foobar")).json() == {"foo": "bar"}
 
 
-def test_build_configuration_empty_parameters():
+def test_build_configuration_empty_parameters_no_k8s():
     configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration.build_configuration([])
 
     assert configuration is not None
     assert configuration.port == 8002
-    assert configuration.hostname == "127.0.0.1"
+    assert configuration.hostname == "localhost"
     assert configuration.schema == "http"
 
 
