@@ -20,10 +20,9 @@ from argparse import ArgumentParser
 
 from dataclasses import dataclass
 import logging
-from typing import Any
+from typing import Any, Optional
 from kubernetes import config
 from kubernetes import client
-from kubernetes import utils
 from kubernetes.client import Configuration
 from kubernetes.config import ConfigException
 import yaml
@@ -35,7 +34,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ModelBasedOrchestratorConfiguration:
-    pass
+    configuration: Optional[Configuration] = None
+    namespace: str = "default"
 
     @staticmethod
     def build_configuration(args: list[str]) -> ModelBasedOrchestratorConfiguration:
@@ -57,26 +57,38 @@ class ModelBasedOrchestratorConfiguration:
                 c.assert_hostname = False
             Configuration.set_default(c)
 
-            return ModelBasedOrchestratorConfiguration()
-        except ConfigException:
-            print("Nothing to do here")
+            return ModelBasedOrchestratorConfiguration(configuration=c, namespace=k8s_args.namespace)
+        except ConfigException as e:
+            print(f"Nothing to do here\n{e=}")
 
         raise RuntimeError("Unable to build configuration")
 
 
 class ModelBasedOrchestratorProcessor:
-    def __init__(self, configuration: ModelBasedOrchestratorConfiguration = ModelBasedOrchestratorConfiguration()):
+    def __init__(self, configuration: ModelBasedOrchestratorConfiguration = ModelBasedOrchestratorConfiguration(None)):
         self._configuration = configuration
-        self._k8s_client = client.ApiClient(self._configuration)
+        self._k8s_client = client.ApiClient(self._configuration.configuration)
 
-    def __call__(self, data: list[str]) -> int:
+    def __call__(self, data: str) -> int:
         logger.info("Wrapping request")
         request = _request_to_dictionary(data)
         logger.info("Sending request to k8s")
-        utils.create_from_dict(self._k8s_client, data=request)
+
+        response = client.CustomObjectsApi(self._k8s_client).create_namespaced_custom_object(
+            group="fluidos.eu",
+            version="v1",
+            namespace=self._configuration.namespace,
+            plural="modelbaseddeployments",
+            body=request,
+            async_req=False
+        )
+
+        logger.debug(f"Response: {response=}")
+
+        return 0
 
 
-def _request_to_dictionary(data: list[str]) -> dict[str, Any]:
+def _request_to_dictionary(data: str) -> dict[str, Any]:
     request_as_yaml: dict[str, Any] = _extract_request(data)
 
     request_to_dictionary = {
@@ -91,13 +103,8 @@ def _request_to_dictionary(data: list[str]) -> dict[str, Any]:
     return request_to_dictionary
 
 
-def _extract_request(data: list[str]) -> dict[str, Any]:
-    parser = _modelBasedArgParser()
-
-    namespace, remaining_args = parser.parse_known_args(data)
-
-    with open(namespace.f, "r") as input_data:
-        return yaml.safe_load(input_data)
+def _extract_request(data: str) -> dict[str, Any]:
+    return yaml.safe_load(data)
 
 
 def _modelBasedArgParser() -> ArgumentParser:

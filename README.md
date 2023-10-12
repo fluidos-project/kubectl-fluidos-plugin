@@ -26,7 +26,16 @@ Once installed, the plugin is accessed by `kubectl` once the command `kubectl fl
 
 ### Example with MSPL
 
-Missing, add example with options specific to MSPL.
+The support for MSPL is through analysis of the data being sent to the meta-orchestrator.
+The pluging assumes that the endpoint runs on on the main node of the kubernetes cluster.
+If no kubernetes context is available, or accessible, the plugin will default assuming the service is running on the host `localhost` and on port `8002`.
+
+For example, as per the following:
+```
+kubectl fluidis -f tests/dataset/test-mspl.xml
+```
+
+This behavior can be changed by 
 
 ### Example with Intent within pod template
 
