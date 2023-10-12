@@ -16,7 +16,6 @@ limitations under the License.
 ------------------------------------------------------------------------------
 '''
 
-import pytest
 from pytest_httpserver import HTTPServer
 import requests
 from werkzeug import Response
