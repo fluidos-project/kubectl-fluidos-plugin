@@ -38,6 +38,7 @@ def mlpsArgParser() -> ArgumentParser:
 
     parser.add_argument("--mlps-hostname", required=False, type=str)
     parser.add_argument("--mlps-port", required=False, type=int)
+    parser.add_argument("--mlps-schema", required=False, type=int)
     parser.add_argument("--mlps-url", required=False, type=str)
 
     return parser
