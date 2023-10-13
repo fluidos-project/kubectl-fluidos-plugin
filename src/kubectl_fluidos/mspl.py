@@ -63,10 +63,11 @@ class MLPSProcessorConfiguration:
 
         if namespace.mlps_url is not None:
             return MLPSProcessorConfiguration(url=namespace.mlps_url)
-        elif namespace.mlps_hostname and namespace.mlps_port:
+        elif namespace.mlps_hostname or namespace.mlps_port or namespace.mlps_schema:
             return MLPSProcessorConfiguration(
-                hostname=namespace.mlps_hostname,
-                port=namespace.mlps_port
+                hostname=namespace.mlps_hostname if namespace.mlps_hostname else "localhost",
+                port=namespace.mlps_port if namespace.mlps_port else 8002,
+                schema=namespace.mlps_schema if namespace.mlps_schema else "http"
             )
 
         try:
