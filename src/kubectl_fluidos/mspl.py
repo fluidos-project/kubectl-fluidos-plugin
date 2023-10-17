@@ -121,7 +121,7 @@ class MSPLProcessorConfiguration:
         raise ValueError("Unable to extract hostname properly")
 
 
-class MPSLProcessor:
+class MSPLProcessor:
     def __init__(self, configuration: MSPLProcessorConfiguration = MSPLProcessorConfiguration()):
         self.configuration = configuration
 

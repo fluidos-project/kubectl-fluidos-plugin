@@ -23,7 +23,7 @@ import requests
 from werkzeug import Response
 from http import HTTPStatus
 
-from kubectl_fluidos import MPSLProcessor
+from kubectl_fluidos import MSPLProcessor
 from kubectl_fluidos import fluidos_kubectl_extension
 from kubectl_fluidos import MSPLProcessorConfiguration
 
@@ -45,7 +45,7 @@ def test_build_configuration_empty_parameters_no_k8s():
 def test_basic_behavior(httpserver: HTTPServer):
     httpserver.expect_request("/meservice", method="POST").respond_with_json({"result": "ok"})
 
-    processor = MPSLProcessor(
+    processor = MSPLProcessor(
         MSPLProcessorConfiguration(url=httpserver.url_for("/meservice"))
     )
 
@@ -63,7 +63,7 @@ def test_configuration_overload_from_cl_arguments():
 
 
 def test_service_not_available():
-    processor = MPSLProcessor(
+    processor = MSPLProcessor(
         MSPLProcessorConfiguration(url="http://localhost:123123/meservice")
     )
 
@@ -77,7 +77,7 @@ def test_timeout_management(httpserver: HTTPServer):
     )
     httpserver.expect_request("/meservice", method="POST").respond_with_response(response=response)
 
-    processor = MPSLProcessor(
+    processor = MSPLProcessor(
         MSPLProcessorConfiguration(url="http://localhost:123123/meservice")
     )
 
@@ -99,7 +99,7 @@ def test_pipeline(httpserver: HTTPServer):
 
     args = ["kubectl-fluidos", "-f", doc_file, "--mspl-url", httpserver.url_for("/meservice")]
 
-    return_value = fluidos_kubectl_extension(args, StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=lambda x: MPSLProcessor(MSPLProcessorConfiguration.build_configuration(args))(x))
+    return_value = fluidos_kubectl_extension(args, StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=lambda x: MSPLProcessor(MSPLProcessorConfiguration.build_configuration(args))(x))
 
     assert return_value == 0
     httpserver.add_assertion

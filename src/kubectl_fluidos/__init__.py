@@ -29,7 +29,7 @@ import logging
 
 from .modelbased import ModelBasedOrchestratorConfiguration
 from .modelbased import ModelBasedOrchestratorProcessor
-from .mspl import MPSLProcessor
+from .mspl import MSPLProcessor
 from .mspl import MSPLProcessorConfiguration
 
 try:
@@ -181,7 +181,7 @@ def main():
         fluidos_kubectl_extension(
             sys.argv,
             sys.stdin,
-            on_mlps=lambda x: MPSLProcessor(MSPLProcessorConfiguration.build_configuration(sys.argv))(x),
+            on_mlps=lambda x: MSPLProcessor(MSPLProcessorConfiguration.build_configuration(sys.argv))(x),
             on_k8s_w_intent=lambda x: ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuration(sys.argv))(x)
         )
     )
