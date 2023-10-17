@@ -1,5 +1,7 @@
 # FLUIDOS kubectl plugin
 
+[![FLUIDOS kubectl plugin](https://github.com/fluidos-project/kubectl-fluidos-plugin/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/fluidos-project/kubectl-fluidos-plugin/actions/workflows/ci.yaml)
+
 This plugin is designed to simplify the utilisation of the meta-schedulers.
 It operates as an additional utility that can be installed on the client side (operator machine).
 
@@ -32,7 +34,7 @@ If no kubernetes context is available, or accessible, the plugin will default as
 
 For example, as per the following:
 ```
-kubectl fluidis -f tests/dataset/test-mspl.xml
+kubectl fluidos -f tests/dataset/test-mspl.xml
 ```
 
 This behavior can be changed using the following options:
