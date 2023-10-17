@@ -29,8 +29,8 @@ import logging
 
 from .modelbased import ModelBasedOrchestratorConfiguration
 from .modelbased import ModelBasedOrchestratorProcessor
-from .mspl import MLPSProcessor
-from .mspl import MLPSProcessorConfiguration
+from .mspl import MPSLProcessor
+from .mspl import MSPLProcessorConfiguration
 
 try:
     from yaml import CLoader as Loader
@@ -181,7 +181,7 @@ def main():
         fluidos_kubectl_extension(
             sys.argv,
             sys.stdin,
-            on_mlps=lambda x: MLPSProcessor(MLPSProcessorConfiguration.build_configuration(sys.argv))(x),
+            on_mlps=lambda x: MPSLProcessor(MSPLProcessorConfiguration.build_configuration(sys.argv))(x),
             on_k8s_w_intent=lambda x: ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuration(sys.argv))(x)
         )
     )
