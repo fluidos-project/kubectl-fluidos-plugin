@@ -37,10 +37,10 @@ kubectl fluidis -f tests/dataset/test-mspl.xml
 
 This behavior can be changed using the following options:
 
-* `--mlps-hostname`, to change the hostname,
-* `--mlps-port`, to change the port number,
-* `--mlps-schema`, to change the schema, or
-* `--mlps-url`, to update the entire URL, including method name.
+* `--mspl-hostname`, to change the hostname,
+* `--mspl-port`, to change the port number,
+* `--mspl-schema`, to change the schema, or
+* `--mspl-url`, to update the entire URL, including method name.
 
 ### Example with Intent within manifest metadata
 
