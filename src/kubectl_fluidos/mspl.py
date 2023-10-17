@@ -33,19 +33,19 @@ from kubectl_fluidos.common import k8sArgParser
 logger = logging.getLogger(__name__)
 
 
-def mlpsArgParser() -> ArgumentParser:
+def msplArgParser() -> ArgumentParser:
     parser = ArgumentParser()
 
-    parser.add_argument("--mlps-hostname", required=False, type=str)
-    parser.add_argument("--mlps-port", required=False, type=int)
-    parser.add_argument("--mlps-schema", required=False, type=int)
-    parser.add_argument("--mlps-url", required=False, type=str)
+    parser.add_argument("--mspl-hostname", required=False, type=str)
+    parser.add_argument("--mspl-port", required=False, type=int)
+    parser.add_argument("--mspl-schema", required=False, type=int)
+    parser.add_argument("--mspl-url", required=False, type=str)
 
     return parser
 
 
 @dataclass
-class MLPSProcessorConfiguration:
+class MSPLProcessorConfiguration:
     hostname: str = "localhost"
     port: int = 8002
     schema: str = "http"
@@ -58,16 +58,16 @@ class MLPSProcessorConfiguration:
             return f"{self.schema}://{self.hostname}:{self.port}/meservice"
 
     @staticmethod
-    def build_configuration(args: list[str]) -> MLPSProcessorConfiguration:
-        namespace, remaining_args = mlpsArgParser().parse_known_args(args)
+    def build_configuration(args: list[str]) -> MSPLProcessorConfiguration:
+        namespace, remaining_args = msplArgParser().parse_known_args(args)
 
-        if namespace.mlps_url is not None:
-            return MLPSProcessorConfiguration(url=namespace.mlps_url)
-        elif namespace.mlps_hostname or namespace.mlps_port or namespace.mlps_schema:
-            return MLPSProcessorConfiguration(
-                hostname=namespace.mlps_hostname if namespace.mlps_hostname else "localhost",
-                port=namespace.mlps_port if namespace.mlps_port else 8002,
-                schema=namespace.mlps_schema if namespace.mlps_schema else "http"
+        if namespace.mspl_url is not None:
+            return MSPLProcessorConfiguration(url=namespace.mspl_url)
+        elif namespace.mspl_hostname or namespace.mspl_port or namespace.mspl_schema:
+            return MSPLProcessorConfiguration(
+                hostname=namespace.mspl_hostname if namespace.mspl_hostname else "localhost",
+                port=namespace.mspl_port if namespace.mspl_port else 8002,
+                schema=namespace.mspl_schema if namespace.mspl_schema else "http"
             )
 
         try:
@@ -98,8 +98,8 @@ class MLPSProcessorConfiguration:
                 c.assert_hostname = False
             Configuration.set_default(c)
 
-            return MLPSProcessorConfiguration(
-                hostname=MLPSProcessorConfiguration._extract_hostname(c.host),
+            return MSPLProcessorConfiguration(
+                hostname=MSPLProcessorConfiguration._extract_hostname(c.host),
                 port=8002,
                 schema="http"
             )
@@ -107,7 +107,7 @@ class MLPSProcessorConfiguration:
             logger.debug(f"Unable to load k8s configuration: {e}")
 
         # if nothing worked, return defaults
-        return MLPSProcessorConfiguration()
+        return MSPLProcessorConfiguration()
 
     @staticmethod
     def _extract_hostname(url: str) -> str:
@@ -121,8 +121,8 @@ class MLPSProcessorConfiguration:
         raise ValueError("Unable to extract hostname properly")
 
 
-class MLPSProcessor:
-    def __init__(self, configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration()):
+class MPSLProcessor:
+    def __init__(self, configuration: MSPLProcessorConfiguration = MSPLProcessorConfiguration()):
         self.configuration = configuration
 
     def __call__(self, data) -> int:

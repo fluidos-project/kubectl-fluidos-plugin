@@ -23,8 +23,9 @@ import requests
 from werkzeug import Response
 from http import HTTPStatus
 
-from kubectl_fluidos import MLPSProcessor, fluidos_kubectl_extension
-from kubectl_fluidos import MLPSProcessorConfiguration
+from kubectl_fluidos import MPSLProcessor
+from kubectl_fluidos import fluidos_kubectl_extension
+from kubectl_fluidos import MSPLProcessorConfiguration
 
 
 def test_handler_responses(httpserver: HTTPServer):
@@ -33,37 +34,37 @@ def test_handler_responses(httpserver: HTTPServer):
 
 
 def test_build_configuration_empty_parameters_no_k8s():
-    configuration: MLPSProcessorConfiguration = MLPSProcessorConfiguration.build_configuration([])
+    configuration: MSPLProcessorConfiguration = MSPLProcessorConfiguration.build_configuration([])
 
     assert configuration is not None
     assert configuration.port == 8002
-    assert configuration.hostname == "127.0.0.1"
+    assert configuration.hostname == "localhost"
     assert configuration.schema == "http"
 
 
 def test_basic_behavior(httpserver: HTTPServer):
     httpserver.expect_request("/meservice", method="POST").respond_with_json({"result": "ok"})
 
-    processor = MLPSProcessor(
-        MLPSProcessorConfiguration(url=httpserver.url_for("/meservice"))
+    processor = MPSLProcessor(
+        MSPLProcessorConfiguration(url=httpserver.url_for("/meservice"))
     )
 
     assert processor("FOOO") == 0
 
 
 def test_configuration_overload_from_cl_arguments():
-    configuration = MLPSProcessorConfiguration.build_configuration(["--mlps-url", "https://some_url.com/my-path"])
+    configuration = MSPLProcessorConfiguration.build_configuration(["--mspl-url", "https://some_url.com/my-path"])
 
     assert configuration.get_url() == "https://some_url.com/my-path"
 
-    configuration = MLPSProcessorConfiguration.build_configuration(["--mlps-hostname", "www.google.com", "--mlps-port", "12355"])
+    configuration = MSPLProcessorConfiguration.build_configuration(["--mspl-hostname", "www.google.com", "--mspl-port", "12355"])
 
     assert configuration.get_url() == "http://www.google.com:12355/meservice"
 
 
 def test_service_not_available():
-    processor = MLPSProcessor(
-        MLPSProcessorConfiguration(url="http://localhost:123123/meservice")
+    processor = MPSLProcessor(
+        MSPLProcessorConfiguration(url="http://localhost:123123/meservice")
     )
 
     assert processor("FOOO") != 0
@@ -76,8 +77,8 @@ def test_timeout_management(httpserver: HTTPServer):
     )
     httpserver.expect_request("/meservice", method="POST").respond_with_response(response=response)
 
-    processor = MLPSProcessor(
-        MLPSProcessorConfiguration(url="http://localhost:123123/meservice")
+    processor = MPSLProcessor(
+        MSPLProcessorConfiguration(url="http://localhost:123123/meservice")
     )
 
     assert processor("FOOO") != 0
@@ -96,9 +97,9 @@ def test_pipeline(httpserver: HTTPServer):
         "message": "ok"
     })
 
-    args = ["kubectl-fluidos", "-f", doc_file, "--mlps-url", httpserver.url_for("/meservice")]
+    args = ["kubectl-fluidos", "-f", doc_file, "--mspl-url", httpserver.url_for("/meservice")]
 
-    return_value = fluidos_kubectl_extension(args, StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=lambda x: MLPSProcessor(MLPSProcessorConfiguration.build_configuration(args))(x))
+    return_value = fluidos_kubectl_extension(args, StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=lambda x: MPSLProcessor(MSPLProcessorConfiguration.build_configuration(args))(x))
 
     assert return_value == 0
     httpserver.add_assertion
