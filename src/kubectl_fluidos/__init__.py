@@ -173,7 +173,7 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
 
     # if nothing else applies, fallback to vanilla kubectl apply behavior
     logger.info("Invoking kubectl apply")
-    return on_apply(argv[-1:], stdin_data)
+    return on_apply(argv[1:], stdin_data)
 
 
 def main():
