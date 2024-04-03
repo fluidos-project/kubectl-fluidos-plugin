@@ -16,13 +16,14 @@ limitations under the License.
 ------------------------------------------------------------------------------
 '''
 import codecs
+from typing import Any
 import pkg_resources
 from io import StringIO
 
 from kubectl_fluidos import fluidos_kubectl_extension, _is_XML, _is_YAML
 
 
-def test_xml_validation():
+def test_xml_validation() -> None:
     xml = """<?xml version="1.0"?>
 <data>
     <country name="Liechtenstein">
@@ -62,7 +63,7 @@ def test_xml_validation():
     assert not _is_XML(text)
 
 
-def test_validate_yaml():
+def test_validate_yaml() -> None:
     text = """grandparent:
   parent:
     child:
@@ -74,11 +75,11 @@ def test_validate_yaml():
     assert not _is_YAML(None)
 
 
-def test_input_defined_as_stdin():
+def test_input_defined_as_stdin() -> None:
     with pkg_resources.resource_stream(__name__, "dataset/test-deployment-single.yaml") as stream:
         text = codecs.getreader("utf-8")(stream).read()
 
-    def validation(a, b):
+    def validation(a: Any, b: Any) -> int:
         return 123456
 
     return_value = fluidos_kubectl_extension(["kubectl-fluidos"], StringIO(text), on_apply=validation)
@@ -86,10 +87,10 @@ def test_input_defined_as_stdin():
     assert return_value == 123456
 
 
-def test_input_from_parameter():
+def test_input_from_parameter() -> None:
     doc_file = pkg_resources.resource_filename(__name__, "dataset/test-deployment-single.yaml")
 
-    def validation(a, b):
+    def validation(a: Any, b: Any) -> int:
         return 123456
 
     return_value = fluidos_kubectl_extension(["kubectl-fluidos", "-f", doc_file], StringIO(), on_apply=validation)
@@ -97,16 +98,16 @@ def test_input_from_parameter():
     assert return_value == 123456
 
 
-def test_validate_fallsback_to_appy():
+def test_validate_fallsback_to_appy() -> None:
     doc_file = pkg_resources.resource_filename(__name__, "dataset/test-deployment-single.yaml")
 
-    def apply(a, b):
+    def apply(a: Any, b: Any) -> int:
         return 123456
 
-    def drl(a, b):
+    def drl(a: Any, b: Any) -> int:
         return 9876342
 
-    def mspl(a, b):
+    def mspl(a: Any, b: Any) -> int:
         return 000000
 
     return_value = fluidos_kubectl_extension(["kubectl-fluidos", "-f", doc_file], StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=mspl)
@@ -114,16 +115,16 @@ def test_validate_fallsback_to_appy():
     assert return_value == 123456
 
 
-def test_yaml_with_intent_invokes_drl():
+def test_yaml_with_intent_invokes_drl() -> None:
     doc_file = pkg_resources.resource_filename(__name__, "dataset/test-deployment-single-w-intent.yaml")
 
-    def apply(a, b):
+    def apply(a: Any, b: Any) -> int:
         return 123456
 
-    def drl(a):
+    def drl(a: Any) -> int:
         return 9876342
 
-    def mspl(a):
+    def mspl(a: Any) -> int:
         return 000000
 
     return_value = fluidos_kubectl_extension(["kubectl-fluidos", "-f", doc_file], StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=mspl)
@@ -131,16 +132,16 @@ def test_yaml_with_intent_invokes_drl():
     assert return_value == 9876342
 
 
-def test_xml_invokes_mspl_by_default():
+def test_xml_invokes_mspl_by_default() -> None:
     doc_file = pkg_resources.resource_filename(__name__, "dataset/test-mspl.xml")
 
-    def apply(a, b):
+    def apply(a: Any, b: Any) -> int:
         return 123456
 
-    def drl(a):
+    def drl(a: Any) -> int:
         return 9876342
 
-    def mspl(a):
+    def mspl(a: Any) -> int:
         return 000000
 
     return_value = fluidos_kubectl_extension(["kubectl-fluidos", "-f", doc_file], StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=mspl)
