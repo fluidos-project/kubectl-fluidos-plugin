@@ -35,7 +35,7 @@ from .mspl import MSPLProcessorConfiguration
 try:
     from yaml import CLoader as Loader
 except ImportError:
-    from yaml import Loader
+    from yaml import Loader  # type: ignore
 
 from xml.etree import ElementTree
 from enum import Enum
@@ -75,9 +75,9 @@ def _to_YAML(data: str) -> dict[str, Any]:
     return yaml.load(data, Loader=Loader)
 
 
-def _check_input_format(input_data: str) -> (InputFormat, Optional[dict[str, Any]]):
+def _check_input_format(input_data: str) -> tuple[InputFormat, dict[str, Any]]:
     if _is_XML(input_data):
-        return (InputFormat.MSPL, None)
+        return (InputFormat.MSPL, dict())
     elif _is_YAML(input_data):
         return (InputFormat.K8S, _to_YAML(input_data))
     raise ValueError("Unknown format")
@@ -132,11 +132,11 @@ def _behavior_not_defined() -> int:
     raise NotImplementedError()
 
 
-def _default_apply(args: list[str], stdin: str) -> int:
+def _default_apply(args: list[str], stdin: str | None) -> int:
     return os.system("kubectl apply " + " ".join(args))
 
 
-def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Callable[[list[str], str], int] = _default_apply, on_mlps: Callable[..., int] = _behavior_not_defined, on_k8s_w_intent: Callable[..., int] = _behavior_not_defined) -> int:
+def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Callable[[list[str], str | None], int] = _default_apply, on_mlps: Callable[..., int] = _behavior_not_defined, on_k8s_w_intent: Callable[..., int] = _behavior_not_defined) -> int:
     logger.info("Starting FLUIDOS kubectl extension")
 
     try:
@@ -176,7 +176,7 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
     return on_apply(argv[1:], stdin_data)
 
 
-def main():
+def main() -> None:
     raise SystemExit(
         fluidos_kubectl_extension(
             sys.argv,
