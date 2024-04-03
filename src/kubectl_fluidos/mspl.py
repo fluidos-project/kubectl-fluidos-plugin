@@ -125,7 +125,7 @@ class MSPLProcessor:
     def __init__(self, configuration: MSPLProcessorConfiguration = MSPLProcessorConfiguration()):
         self.configuration = configuration
 
-    def __call__(self, data) -> int:
+    def __call__(self, data: str) -> int:
         try:
             response = post(self.configuration.get_url(), headers=self._build_headers(), data=data)
             if response.status_code == 200:

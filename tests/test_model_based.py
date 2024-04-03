@@ -15,4 +15,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ------------------------------------------------------------------------------
 '''
-import pytest
+import pkg_resources
+from pytest_kubernetes.providers.base import AClusterManager
+# from kubectl_fluidos import fluidos_kubectl_extension
+
+
+def test_basic_creation(k8s: AClusterManager) -> None:
+    k8s.create()
+
+    crd_path = pkg_resources.resource_filename(__name__, "utility/fluidos-deployment-crd.yaml")
+    k8s.apply(crd_path)
+
+    k8s.delete()

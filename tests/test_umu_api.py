@@ -17,6 +17,7 @@ limitations under the License.
 '''
 
 from io import StringIO
+from typing import Any
 import pkg_resources
 from pytest_httpserver import HTTPServer
 import requests
@@ -28,12 +29,12 @@ from kubectl_fluidos import fluidos_kubectl_extension
 from kubectl_fluidos import MSPLProcessorConfiguration
 
 
-def test_handler_responses(httpserver: HTTPServer):
+def test_handler_responses(httpserver: HTTPServer) -> None:
     httpserver.expect_request("/foobar").respond_with_json({"foo": "bar"})
     assert requests.get(httpserver.url_for("/foobar")).json() == {"foo": "bar"}
 
 
-def test_build_configuration_empty_parameters_no_k8s():
+def test_build_configuration_empty_parameters_no_k8s() -> None:
     configuration: MSPLProcessorConfiguration = MSPLProcessorConfiguration.build_configuration([])
 
     assert configuration is not None
@@ -42,7 +43,7 @@ def test_build_configuration_empty_parameters_no_k8s():
     assert configuration.schema == "http"
 
 
-def test_basic_behavior(httpserver: HTTPServer):
+def test_basic_behavior(httpserver: HTTPServer) -> None:
     httpserver.expect_request("/meservice", method="POST").respond_with_json({"result": "ok"})
 
     processor = MSPLProcessor(
@@ -52,7 +53,7 @@ def test_basic_behavior(httpserver: HTTPServer):
     assert processor("FOOO") == 0
 
 
-def test_configuration_overload_from_cl_arguments():
+def test_configuration_overload_from_cl_arguments() -> None:
     configuration = MSPLProcessorConfiguration.build_configuration(["--mspl-url", "https://some_url.com/my-path"])
 
     assert configuration.get_url() == "https://some_url.com/my-path"
@@ -62,7 +63,7 @@ def test_configuration_overload_from_cl_arguments():
     assert configuration.get_url() == "http://www.google.com:12355/meservice"
 
 
-def test_service_not_available():
+def test_service_not_available() -> None:
     processor = MSPLProcessor(
         MSPLProcessorConfiguration(url="http://localhost:123123/meservice")
     )
@@ -70,7 +71,7 @@ def test_service_not_available():
     assert processor("FOOO") != 0
 
 
-def test_timeout_management(httpserver: HTTPServer):
+def test_timeout_management(httpserver: HTTPServer) -> None:
     response: Response = Response(
         response=None,
         status=HTTPStatus.BAD_REQUEST
@@ -84,13 +85,13 @@ def test_timeout_management(httpserver: HTTPServer):
     assert processor("FOOO") != 0
 
 
-def test_pipeline(httpserver: HTTPServer):
+def test_pipeline(httpserver: HTTPServer) -> None:
     doc_file = pkg_resources.resource_filename(__name__, "dataset/test-mspl.xml")
 
-    def apply(a, b):
+    def apply(a: Any, b: Any) -> int:
         return 123456
 
-    def drl(a):
+    def drl(a: Any) -> int:
         return 9876342
 
     httpserver.expect_request("/meservice", method="POST").respond_with_json({
