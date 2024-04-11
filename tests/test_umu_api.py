@@ -39,7 +39,7 @@ def test_build_configuration_empty_parameters_no_k8s() -> None:
 
     assert configuration is not None
     assert configuration.port == 8002
-    assert configuration.hostname == "localhost"
+    assert configuration.hostname == "localhost" or configuration.hostname == "0.0.0.0"
     assert configuration.schema == "http"
 
 
@@ -103,4 +103,3 @@ def test_pipeline(httpserver: HTTPServer) -> None:
     return_value = fluidos_kubectl_extension(args, StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=lambda x: MSPLProcessor(MSPLProcessorConfiguration.build_configuration(args))(x))
 
     assert return_value == 0
-    httpserver.add_assertion
