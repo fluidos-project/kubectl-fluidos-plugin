@@ -15,9 +15,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ------------------------------------------------------------------------------
 '''
+from io import StringIO
+import time
 import pkg_resources
 from pytest_kubernetes.providers.base import AClusterManager
-# from kubectl_fluidos import fluidos_kubectl_extension
+from kubectl_fluidos import fluidos_kubectl_extension
+from kubectl_fluidos.modelbased import ModelBasedOrchestratorConfiguration, ModelBasedOrchestratorProcessor
 
 
 def test_basic_creation(k8s: AClusterManager) -> None:
@@ -25,5 +28,23 @@ def test_basic_creation(k8s: AClusterManager) -> None:
 
     crd_path = pkg_resources.resource_filename(__name__, "utility/fluidos-deployment-crd.yaml")
     k8s.apply(crd_path)
+
+    assert len(k8s.kubectl(["get", "fd"])["items"]) == 0
+
+    doc_file = pkg_resources.resource_filename(__name__, "dataset/test-deployment-single-w-intent.yaml")
+
+    return_value = fluidos_kubectl_extension(["kubectl-fluidos", "-f", doc_file], StringIO(),
+                                             on_k8s_w_intent=lambda x: ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuration([
+                                                 "--kubeconfig", str(k8s.kubeconfig.absolute())
+                                             ]))(x)
+                                             )
+
+    assert 0 == return_value
+
+    kctl_ret = k8s.kubectl(["get", "fd"])
+
+    assert kctl_ret
+    assert len(kctl_ret["items"]) == 1
+    assert kctl_ret["items"][0]["metadata"]["name"] == "dataset-operator"
 
     k8s.delete()

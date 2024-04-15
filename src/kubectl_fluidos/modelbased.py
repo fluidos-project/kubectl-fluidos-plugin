@@ -84,7 +84,7 @@ class ModelBasedOrchestratorProcessor:
             group="fluidos.eu",
             version="v1",
             namespace=self._configuration.namespace,
-            plural="modelbaseddeployments",
+            plural="fluidosdeployments",
             body=request,
             async_req=False
         )
@@ -102,7 +102,7 @@ def _request_to_dictionary(data: str) -> dict[str, Any]:
 
     request_to_dictionary = {
         "apiVersion": "fluidos.eu/v1",
-        "kind": "ModelBasedDeployment",
+        "kind": "FLUIDOSDeployment",
         "metadata": {
             "name": request_as_yaml["metadata"]["name"]
         },
