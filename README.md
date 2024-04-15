@@ -7,7 +7,7 @@ It operates as an additional utility that can be installed on the client side (o
 
 ## Requirements
 
-The only assumption is to have python 3 installed, the plugin is tested with versions 3.10, 3.11, 3.12, and pypy 3.
+The only assumption is to have python 3 installed, the plugin is tested with versions 3.10, 3.11, and pypy 3.
 Refer to [tox.ini](tox.ini) for details about which versions are being tested.
 
 
