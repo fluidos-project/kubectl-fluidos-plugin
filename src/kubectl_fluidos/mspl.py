@@ -17,10 +17,12 @@ limitations under the License.
 '''
 from __future__ import annotations
 
+import logging
 from argparse import ArgumentParser
 from dataclasses import dataclass
-import logging
-from typing import Any, Optional
+from typing import Any
+from typing import Optional
+
 from kubernetes import config
 from kubernetes.client import Configuration
 from kubernetes.config import ConfigException

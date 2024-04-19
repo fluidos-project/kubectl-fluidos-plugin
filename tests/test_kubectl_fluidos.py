@@ -16,11 +16,14 @@ limitations under the License.
 ------------------------------------------------------------------------------
 '''
 import codecs
-from typing import Any
-import pkg_resources
 from io import StringIO
+from typing import Any
 
-from kubectl_fluidos import fluidos_kubectl_extension, _is_XML, _is_YAML
+import pkg_resources
+
+from kubectl_fluidos import _is_XML
+from kubectl_fluidos import _is_YAML
+from kubectl_fluidos import fluidos_kubectl_extension
 
 
 def test_xml_validation() -> None:

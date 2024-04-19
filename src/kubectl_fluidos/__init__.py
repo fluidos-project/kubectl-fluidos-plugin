@@ -17,15 +17,15 @@ limitations under the License.
 '''
 from __future__ import annotations
 
+import logging
 import os
 import sys
 from typing import Any
 from typing import Callable
 from typing import Optional
 from typing import TextIO
-import yaml
 
-import logging
+import yaml
 
 from .modelbased import ModelBasedOrchestratorConfiguration
 from .modelbased import ModelBasedOrchestratorProcessor
