@@ -21,7 +21,6 @@ from typing import Any
 
 import pkg_resources
 import requests
-from pytest import fail
 from pytest_httpserver import HTTPServer
 from werkzeug import Response
 
@@ -106,5 +105,31 @@ def test_pipeline(httpserver: HTTPServer) -> None:
     assert return_value == 0
 
 
-def test_error_handling() -> None:
-    fail("Not implemented yet")
+def test_error_handling_invalid_url() -> None:
+    with pkg_resources.resource_stream(__name__, "dataset/test-mspl.xml") as input_stream:
+        data = input_stream.read()
+
+    mspl_processor = MSPLProcessor(
+        MSPLProcessorConfiguration(
+            url="not-existing-url"
+        )
+    )
+
+    e = mspl_processor(data)
+
+    assert e != 0
+
+
+def test_error_handling_valid_but_incorrect_url() -> None:
+    with pkg_resources.resource_stream(__name__, "dataset/test-mspl.xml") as input_stream:
+        data = input_stream.read()
+
+    mspl_processor = MSPLProcessor(
+        MSPLProcessorConfiguration(
+            url="http://fake-url-not-real.com:123/something"
+        )
+    )
+
+    e = mspl_processor(data)
+
+    assert e != 0

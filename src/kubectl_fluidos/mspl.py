@@ -27,7 +27,9 @@ from kubernetes import config
 from kubernetes.client import Configuration
 from kubernetes.config import ConfigException
 from requests import post
+from requests.exceptions import ConnectionError
 from requests.exceptions import InvalidURL
+from requests.exceptions import MissingSchema
 
 from kubectl_fluidos.common import k8sArgParser
 
@@ -132,8 +134,11 @@ class MSPLProcessor:
             response = post(self.configuration.get_url(), headers=self._build_headers(), data=data)
             if response.status_code == 200:
                 return 0
-        except InvalidURL as e:
-            logger.info(f"Error connecting to the orchestration service {e.response}")
+        except (MissingSchema, InvalidURL):
+            logger.info(f"Invalid URL option {self.configuration.get_url()}")
+            return 1
+        except ConnectionError as e:
+            logger.info(f"Error connecting to the MSPL orchestration service {e}")
             return 1
 
         if int(response.status_code / 100) == 4:
