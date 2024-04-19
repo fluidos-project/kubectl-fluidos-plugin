@@ -29,8 +29,8 @@ Once installed, the plugin is accessed by `kubectl` once the command `kubectl fl
 ### Example with MSPL
 
 The support for MSPL is through analysis of the data being sent to the meta-orchestrator.
-The pluging assumes that the endpoint runs on on the main node of the kubernetes cluster.
-If no kubernetes context is available, or accessible, the plugin will default assuming the service is running on the host `localhost`, on port `8002`, over HTTP, at the endpointt called `/meservice`
+Note that the pluging assumes that the endpoint runs on on the main node of the kubernetes cluster.
+If no kubernetes context is available, or accessible, the plugin will default assuming the service is running on the host `localhost`, on port `8002`, over HTTP, at the endpoint called `/meservice`
 
 For example, as per the following:
 ```
