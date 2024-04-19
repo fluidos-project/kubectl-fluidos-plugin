@@ -15,18 +15,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ------------------------------------------------------------------------------
 '''
-
+from http import HTTPStatus
 from io import StringIO
 from typing import Any
+
 import pkg_resources
+import requests
 from pytest import fail
 from pytest_httpserver import HTTPServer
-import requests
 from werkzeug import Response
-from http import HTTPStatus
 
-from kubectl_fluidos import MSPLProcessor
 from kubectl_fluidos import fluidos_kubectl_extension
+from kubectl_fluidos import MSPLProcessor
 from kubectl_fluidos import MSPLProcessorConfiguration
 
 

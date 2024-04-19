@@ -16,19 +16,19 @@ limitations under the License.
 ------------------------------------------------------------------------------
 '''
 from __future__ import annotations
-from argparse import ArgumentParser
 
-from dataclasses import dataclass
-import logging
 import logging.config
-from typing import Any, Optional
-from kubernetes import config
-from kubernetes import client
-from kubernetes.client import Configuration
-from kubernetes.config import ConfigException
-import yaml
+from argparse import ArgumentParser
+from dataclasses import dataclass
+from typing import Any
+from typing import Optional
 
 import pkg_resources
+import yaml
+from kubernetes import client
+from kubernetes import config
+from kubernetes.client import Configuration
+from kubernetes.config import ConfigException
 
 from kubectl_fluidos.common import k8sArgParser
 

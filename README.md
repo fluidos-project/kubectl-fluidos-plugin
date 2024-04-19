@@ -96,7 +96,7 @@ kubectl fluidos -f tests/dataset/test-deployment-with-intent.yaml
 
 ### Example of no requirement and fallback to normal behavior
 
-If the manifest file provided to the plugin is neither defined using the MSPL language, or including a definition of intent, then it will be handled as if it was provided to the `apply` command. 
+If the manifest file provided to the plugin is neither defined using the MSPL language, or including a definition of intent, then it will be handled as if it was provided to the `apply` command.
 
 For example, the following manifest will not be handled directly by kubernetes.
 

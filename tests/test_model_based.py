@@ -16,11 +16,13 @@ limitations under the License.
 ------------------------------------------------------------------------------
 '''
 from io import StringIO
-import time
+
 import pkg_resources
 from pytest_kubernetes.providers.base import AClusterManager
+
 from kubectl_fluidos import fluidos_kubectl_extension
-from kubectl_fluidos.modelbased import ModelBasedOrchestratorConfiguration, ModelBasedOrchestratorProcessor
+from kubectl_fluidos.modelbased import ModelBasedOrchestratorConfiguration
+from kubectl_fluidos.modelbased import ModelBasedOrchestratorProcessor
 
 
 def test_basic_creation(k8s: AClusterManager) -> None:
