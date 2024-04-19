@@ -19,6 +19,7 @@ limitations under the License.
 from io import StringIO
 from typing import Any
 import pkg_resources
+from pytest import fail
 from pytest_httpserver import HTTPServer
 import requests
 from werkzeug import Response
@@ -103,3 +104,7 @@ def test_pipeline(httpserver: HTTPServer) -> None:
     return_value = fluidos_kubectl_extension(args, StringIO(), on_apply=apply, on_k8s_w_intent=drl, on_mlps=lambda x: MSPLProcessor(MSPLProcessorConfiguration.build_configuration(args))(x))
 
     assert return_value == 0
+
+
+def test_error_handling() -> None:
+    fail("Not implemented yet")
