@@ -1,4 +1,3 @@
-# coding: utf-8
 '''
 ------------------------------------------------------------------------------
 Copyright 2023 IBM Research Europe
@@ -28,6 +27,7 @@ import yaml
 from kubernetes import client
 from kubernetes import config
 from kubernetes.client import Configuration
+from kubernetes.client.exceptions import ApiException
 from kubernetes.config import ConfigException
 
 from kubectl_fluidos.common import k8sArgParser
@@ -74,27 +74,37 @@ class ModelBasedOrchestratorProcessor:
         self._configuration = configuration
         self._k8s_client = client.ApiClient(self._configuration.configuration)
 
-    def __call__(self, data: str) -> int:
+    def __call__(self, data: str | bytes) -> int:
         logger.info("Wrapping request")
-        request = _request_to_dictionary(data)
+        try:
+            request = _request_to_dictionary(data)
+        except TypeError as e:
+            logger.error("Error processing requeest, possibly malformed")
+            logger.debug(f"Error message {e=}")
+            return -1
         logger.info("Sending request to k8s")
         logger.debug(f"{yaml.safe_dump(request)}")
 
-        response = client.CustomObjectsApi(self._k8s_client).create_namespaced_custom_object(
-            group="fluidos.eu",
-            version="v1",
-            namespace=self._configuration.namespace,
-            plural="fluidosdeployments",
-            body=request,
-            async_req=False
-        )
+        try:
+            response = client.CustomObjectsApi(self._k8s_client).create_namespaced_custom_object(
+                group="fluidos.eu",
+                version="v1",
+                namespace=self._configuration.namespace,
+                plural="fluidosdeployments",
+                body=request,
+                async_req=False
+            )
+        except ApiException as e:
+            logger.error("Unable to create a FLUIDOSDeployment resource for current request")
+            logger.debug(f"Response error: {e=}")
+            return -1
 
         logger.debug(f"Response: {response=}")
 
         return 0
 
 
-def _request_to_dictionary(data: str) -> dict[str, Any]:
+def _request_to_dictionary(data: str | bytes) -> dict[str, Any]:
     logger.info("Converting to dictionary and augmenting")
     request_as_yaml: dict[str, Any] = _extract_request(data)
 
@@ -112,7 +122,7 @@ def _request_to_dictionary(data: str) -> dict[str, Any]:
     return request_to_dictionary
 
 
-def _extract_request(data: str) -> dict[str, Any]:
+def _extract_request(data: str | bytes) -> dict[str, Any]:
     return yaml.safe_load(data)
 
 

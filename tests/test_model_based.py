@@ -50,3 +50,31 @@ def test_basic_creation(k8s: AClusterManager) -> None:
     assert kctl_ret["items"][0]["metadata"]["name"] == "dataset-operator"
 
     k8s.delete()
+
+
+def test_error_if_no_CRD_defined(k8s: AClusterManager) -> None:
+    k8s.create()
+
+    processor = ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuration(["--kubeconfig", str(k8s.kubeconfig.absolute())]))
+
+    with pkg_resources.resource_stream(__name__, "dataset/test-deployment-single-w-intent.yaml") as input_data:
+        ret = processor(input_data.read())
+
+    assert ret != 0
+
+    k8s.delete()
+
+
+def test_error_if_malformed_request(k8s: AClusterManager) -> None:
+    k8s.create()
+    crd_path = pkg_resources.resource_filename(__name__, "utility/fluidos-deployment-crd.yaml")
+    k8s.apply(crd_path)
+
+    processor = ModelBasedOrchestratorProcessor(ModelBasedOrchestratorConfiguration.build_configuration(["--kubeconfig", str(k8s.kubeconfig.absolute())]))
+
+    with pkg_resources.resource_stream(__name__, "dataset/test-mspl.xml") as input_data:
+        ret = processor(input_data.read())
+
+    assert ret != 0
+
+    k8s.delete()
