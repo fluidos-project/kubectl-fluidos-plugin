@@ -24,6 +24,8 @@ It will also create a binary named `kubectl-fluidos` that should be available di
 
 Once installed, the plugin is accessed by `kubectl` once the command `kubectl fluidos` is issued.
 
+Note that the plugin assumes a correct deployment of either (or both) a MSPL-based meta orchestrator, or the [FLUIDOS Model-based Meta orchestrator](https://github.com/fluidos-project/fluidos-modelbased-metaorchestrator) to be correctly deployed and configured within the accessed FLUIDOS domain.
+
 ## Examples
 
 ### Example with MSPL
