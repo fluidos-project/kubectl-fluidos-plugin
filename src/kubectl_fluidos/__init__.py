@@ -1,4 +1,3 @@
-# coding: utf-8
 '''
 ------------------------------------------------------------------------------
 Copyright 2023 IBM Research Europe
@@ -20,9 +19,8 @@ from __future__ import annotations
 import logging
 import os
 import sys
+from collections.abc import Callable
 from typing import Any
-from typing import Callable
-from typing import Optional
 from typing import TextIO
 
 import yaml
@@ -106,7 +104,7 @@ def _attempt_reading_from_stdio(stdin: TextIO) -> str:
         return stdin.read()
 
 
-def _extract_input_data(arguments: list[str], stdin: TextIO) -> tuple[list[str], Optional[str]]:
+def _extract_input_data(arguments: list[str], stdin: TextIO) -> tuple[list[str], str | None]:
     input_data: list[str] = [
         _read_file_argument_content(arguments[idx + 1]) for idx, arg in enumerate(arguments) if (arg == "-f" or arg == "--filename") and idx + 1 < len(arguments)
     ]
@@ -145,7 +143,7 @@ def fluidos_kubectl_extension(argv: list[str], stdin: TextIO, *, on_apply: Calla
         print("error: must specify one of -f and -k", file=sys.stderr)
         return 1
 
-    data: Optional[str] = None
+    data: str | None = None
 
     if stdin_data:
         data = stdin_data
