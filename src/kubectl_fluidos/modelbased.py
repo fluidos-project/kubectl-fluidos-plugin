@@ -20,7 +20,6 @@ import logging.config
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from typing import Any
-from typing import Optional
 
 import pkg_resources
 import yaml
@@ -39,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ModelBasedOrchestratorConfiguration:
-    configuration: Optional[Configuration] = None
+    configuration: Configuration | None = None
     namespace: str = "default"
 
     @staticmethod

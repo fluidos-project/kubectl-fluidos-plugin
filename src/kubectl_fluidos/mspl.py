@@ -1,4 +1,3 @@
-# coding: utf-8
 '''
 ------------------------------------------------------------------------------
 Copyright 2023 IBM Research Europe
@@ -21,7 +20,6 @@ import logging
 from argparse import ArgumentParser
 from dataclasses import dataclass
 from typing import Any
-from typing import Optional
 
 from kubernetes import config
 from kubernetes.client import Configuration
@@ -53,7 +51,7 @@ class MSPLProcessorConfiguration:
     hostname: str = "localhost"
     port: int = 8002
     schema: str = "http"
-    url: Optional[str] = None
+    url: str | None = None
 
     def get_url(self) -> str:
         if self.url:
